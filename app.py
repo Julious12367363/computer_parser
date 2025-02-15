@@ -19,6 +19,7 @@ def about():
 def contact():
     return render_template('contact.html',)
 
+# new comment
 
 @app.route('/result')
 def result():
