@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parsed Links</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .filters {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ссылки на компоненты</h1>
+
+    <div class="filters">
+        <form method="get">
+            <select name="component">
+                <option value="">All Components</option>
+                {% for comp in components %}
+                    <option value="{{ comp }}">{{ comp }}</option>
+                {% endfor %}
+            </select>
+            <select name="is_parsed">
+                <option value="">All Statuses</option>
+                <option value="true">Parsed</option>
+                <option value="false">Not Parsed</option>
+            </select>
+
+            <input type="submit" value="Filter">
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Component</th>
+                <th>Title</th>
+                <th>Link</th>
+                <th>Parsed</th>
+                <th>Parse Date</th>
+                <th>Image_url</th>
+                <th>Price</th>
+                <th>Articul</th>
+                <th>Is_actual</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for link in links %}
+            <tr>
+                <td>{{ link.id }}</td>
+                <td>{{ link.component }}</td>
+                <td>{{ link.title }}</td>
+                <td><a href="{{ link.link }}" target="_blank">Open Link</a></td>
+                <td>{{ "Yes" if link.is_parsed else "No" }}</td>
+                <td>{{ link.date_parse.strftime('%Y-%m-%d %H:%M:%S') if link.date_parse else 'N/A' }}</td>
+                <td><a href="{{ link.image_url if link.image_url else None  }}" target="_blank">{{ "Open_Link_img" if link.image_url else "None"  }}</a></td>
+                <td>{{ link.price }}</td>
+                <td>{{ link.articul_yandex }}</td>
+                <td>{{ link.is_actual }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if pagination %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('get_links', page=pagination.prev_num, component=request.args.get('component'), is_parsed=request.args.get('is_parsed')) }}">Previous</a>
+        {% endif %}
+
+        Page {{ pagination.page }} of {{ pagination.pages }}
+
+        {% if pagination.has_next %}
+            <a href="{{ url_for('get_links', page=pagination.next_num, component=request.args.get('component'), is_parsed=request.args.get('is_parsed')) }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</body>
+</html>
