@@ -185,7 +185,7 @@ def get_links(driver):
     count = 0
 
     parts = {}
-    for url_for_pasrsing in URL[2:8]:
+    for url_for_pasrsing in URL[:8]:
         component = url_for_pasrsing[2]
         list_components = []
         # url = f"https://market.yandex.ru/search?text={component}"
@@ -195,7 +195,24 @@ def get_links(driver):
         # print("url=", url)
 
         driver.get(url)
-        #time.sleep(30)
+        # try:
+        #     element = WebDriverWait(driver, 10).until(
+        #         EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'min')]"))
+        #     )
+        #     element.clear()
+        #     element.send_keys('100')
+        #     element = WebDriverWait(driver, 10).until(
+        #         EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'max')]"))
+        #     )
+        #     element.clear()
+        #     element.send_keys('3500')
+        # except:
+        #     print("Не сработало указание цены")
+        #     driver.save_screenshot("screenshot.png")
+        # time.sleep(60)
+        # action = ActionChains(driver)
+        # action.move_by_offset(100, 300).click().perform()
+        time.sleep(30)
 
         # Задаем количество прокруток
         scroll_count = 30
@@ -214,23 +231,6 @@ def get_links(driver):
         time.sleep(5)
         soup = BeautifulSoup(html, 'html.parser')
         items = soup.find_all('a') #, data-auto='snippet-link')
-        # try:
-        #     element = WebDriverWait(driver, 10).until(
-        #         EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'min')]"))
-        #     )
-        #     element.clear()
-        #     element.send_keys('100')
-        #     element = WebDriverWait(driver, 10).until(
-        #         EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'max')]"))
-        #     )
-        #     element.clear()
-        #     element.send_keys('10000')
-        # except:
-        #     print("Не сработало указание цены")
-        #     driver.save_screenshot("screenshot.png")
-        #time.sleep(60)
-        # action = ActionChains(driver)
-        # action.move_by_offset(100, 300).click().perform()
         time.sleep(5)
         for item in items:
             if item:

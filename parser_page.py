@@ -107,79 +107,93 @@ def parse_card_component(url) -> dict:
         html = driver.page_source
         time.sleep(5)
         soup = BeautifulSoup(html, 'html.parser')
-        items = soup.find_all('noframes', {'data-apiary': 'patch'})
-        # action = ActionChains(driver)
-        # action.move_by_offset(60, 500).click().perform()
-        time.sleep(5)
-        for item in items:
-            if '{"widgets":{"@card/SpecsListNewGrid"' in str(item):
-                json_text = item.string
-                break
+        if not (soup.find_all(
+            string=re.compile("Нет в продаже")
+            ) or
+            soup.find_all
+                (string=re.compile("Нет у продавца")
+                 )
+        ):
+            items = soup.find_all('noframes', {'data-apiary': 'patch'})
+            # action = ActionChains(driver)
+            # action.move_by_offset(60, 500).click().perform()
+            time.sleep(5)
+            for item in items:
+                if '{"widgets":{"@card/SpecsListNewGrid"' in str(item):
+                    json_text = item.string
+                    break
 
-        component_dict = find_json(json_text)
-        price_text = soup.find('meta', itemprop='price')
-        price = clean_price(str(price_text))
+            component_dict = find_json(json_text)
+            price_text = soup.find('meta', itemprop='price')
+            price = clean_price(str(price_text))
 
-        title = soup.find('h1', {
-            'data-additional-zone': 'title',
-            'data-auto': 'productCardTitle',
-            'class': 'ds-text ds-text_weight_med ds-text_withHyphens ds-text_typography_lead-text _3liU0 ds-text_lead-text_normal ds-text_lead-text_med'
-        })
-
-        if title:
-            component_dict["component_name"] = title.text
-        else:
-            print("Заголовок компонента не найден.")
-            component_dict["component_name"] = ""
-
-        article_element = soup.find('article', class_='_3zVgf _3Urwh _2xIXL')
-        if article_element:
-            # Находим элемент <img> внутри article
-            img_element = article_element.find('img')
-
-            if img_element:
-                # Извлекаем путь к изображению из атрибута src
-                img_src = img_element.get('src')
-                component_dict["image_url"] = [img_src]
-                print(f"Путь к изображению: {img_src}")
+            title = soup.find('h1', {
+                'data-additional-zone': 'title',
+                'data-auto': 'productCardTitle',
+                'class': 'ds-text ds-text_weight_med ds-text_withHyphens ds-text_typography_lead-text _3liU0 ds-text_lead-text_normal ds-text_lead-text_med'
+            })
+            if not title:
+                title = soup.find('h1', {
+                    'data-additional-zone': 'title',
+                    'data-auto': 'productCardTitle',
+                    'class': 'ds-text ds-text_weight_med ds-text_withHyphens ds-text_typography_headline-5 _3liU0 ds-text_headline-5_normal ds-text_headline-5_med'
+                })
+            if title:
+                component_dict["component_name"] = title.text
             else:
-                print("Элемент <img> не найден внутри <article>.")
+                print("Заголовок компонента не найден.")
+                component_dict["component_name"] = ""
+
+            article_element = soup.find('article', class_='_3zVgf _3Urwh _2xIXL')
+            if article_element:
+                # Находим элемент <img> внутри article
+                img_element = article_element.find('img')
+
+                if img_element:
+                    # Извлекаем путь к изображению из атрибута src
+                    img_src = img_element.get('src')
+                    component_dict["image_url"] = [img_src]
+                    print(f"Путь к изображению: {img_src}")
+                else:
+                    print("Элемент <img> не найден внутри <article>.")
+                    component_dict["image_url"] = [""]
+            else:
+                print("Элемент <article> не найден.")
                 component_dict["image_url"] = [""]
-        else:
-            print("Элемент <article> не найден.")
-            component_dict["image_url"] = [""]
-        component_dict["price"] = price
-        component_dict["url"] = url
-        if component_dict["component_type"] == "":
-            if "materinskaia-plata" in url:
-                component_dict["component_type"] = "materinskaia-plata"
-            elif "videokarty" in url:
-                component_dict["component_type"] = "videokarty"
-            elif "protsessory-cpu" in url:
-                component_dict["component_type"] = "protsessory-cpu"
-            elif "vnutrennie-tverdotelnye-nakopiteli-ssd" in url:
-                component_dict["component_type"] = "vnutrennie-tverdotelnye-nakopiteli-ssd"
-            elif "moduli-pamiati" in url:
-                component_dict["component_type"] = "moduli-pamiati"
-            elif "vnutrennie-zhestkie-diski" in url:
-                component_dict["component_type"] = "vnutrennie-zhestkie-diski"
-            elif "kompiuternye-korpusa" in url:
-                component_dict["component_type"] = "kompiuternye-korpusa"
-            elif "bloki-pitaniia-dlia-kompiuterov" in url:
-                component_dict["component_type"] = "bloki-pitaniia-dlia-kompiuterov"
-            elif "kulery-i-sistemy-okhlazhdeniia-dlia-kompiuterov" in url:
-                component_dict["component_type"] = "kulery-i-sistemy-okhlazhdeniia-dlia-kompiuterov"
-            elif "zvukovye-karty" in url:
-                component_dict["component_type"] = "zvukovye-karty"
+            component_dict["price"] = price
+            component_dict["url"] = url
+            if component_dict["component_type"] == "":
+                if "materinskaia-plata" in url:
+                    component_dict["component_type"] = "materinskaia-plata"
+                elif "videokarty" in url:
+                    component_dict["component_type"] = "videokarty"
+                elif "protsessory-cpu" in url:
+                    component_dict["component_type"] = "protsessory-cpu"
+                elif "vnutrennie-tverdotelnye-nakopiteli-ssd" in url:
+                    component_dict["component_type"] = "vnutrennie-tverdotelnye-nakopiteli-ssd"
+                elif "moduli-pamiati" in url:
+                    component_dict["component_type"] = "moduli-pamiati"
+                elif "vnutrennie-zhestkie-diski" in url:
+                    component_dict["component_type"] = "vnutrennie-zhestkie-diski"
+                elif "kompiuternye-korpusa" in url:
+                    component_dict["component_type"] = "kompiuternye-korpusa"
+                elif "bloki-pitaniia-dlia-kompiuterov" in url:
+                    component_dict["component_type"] = "bloki-pitaniia-dlia-kompiuterov"
+                elif "kulery-i-sistemy-okhlazhdeniia-dlia-kompiuterov" in url:
+                    component_dict["component_type"] = "kulery-i-sistemy-okhlazhdeniia-dlia-kompiuterov"
+                elif "zvukovye-karty" in url:
+                    component_dict["component_type"] = "zvukovye-karty"
 
-            if component_dict["component_type"] == "materinskie-platy":
-                component_dict["component_type"] = "materinskaia-plata"
+                if component_dict["component_type"] == "materinskie-platy":
+                    component_dict["component_type"] = "materinskaia-plata"
 
-        print("component_dict=", component_dict)
-        driver.quit()
-        if price != "" and title != "" and component_dict['fullSpecsGrouped']:
+            print("component_dict=", component_dict)
+            driver.quit()
+        # if price != "" and title != "" and component_dict['fullSpecsGrouped']:
             return component_dict
+        # else:
         else:
+            print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nНет в продаже\nurl={url}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             print("Не все данные удалось спарсить на странице url=", url)
             return {'error': f"Не все данные удалось спарсить на странице url=url"}
     except Exception as e:
