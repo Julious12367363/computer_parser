@@ -11,7 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from job_get_links import parse_first_links
 from parser_page import parse_card_component
 from flask_migrate import Migrate
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, case, desc
 from compatibilyty_algoritm import compatible
 
 
@@ -48,11 +48,23 @@ def create_app(config_name='dev'):
                 Links.is_actual == True
             ).limit(100).all()
 
+            unparsed_links = Links.query.filter(
+                Links.is_parsed == False,
+                Links.is_actual == True
+            ).order_by(
+                case(
+                    (Links.date_parse == None, 1),  # Если date_parse равно None, присваиваем значение 1
+                    else_=0  # В остальных случаях присваиваем значение 0
+                ),
+                desc(Links.date_parse)  # Сортируем по date_parse по убыванию, более новые даты первыми
+            ).limit(100).all()
+
             # Список для результатов
             parsed_results = []
 
             # Перебираем неспарсенные ссылки
             for link_obj in unparsed_links:
+                time.sleep(10)
                 try:
                     # Парсим карточку компонента
                     parsed_data = parse_card_component(link_obj.link)
@@ -469,9 +481,9 @@ def create_app(config_name='dev'):
             motherboards = get_components_by_type_and_price("materinskaia-plata",float(all_price) * 0.02, float(all_price) * 0.12)
             processors = get_components_by_type_and_price("protsessory-cpu",float(all_price) * 0.10, float(all_price) * 0.16)
             videocards = get_components_by_type_and_price("videokarty",float(all_price) * 0.4, float(all_price) * 0.6)
-            rams = get_components_by_type_and_price("operativnaia-pamiat",float(all_price) * 0.08, float(all_price) * 0.13)
+            rams = get_components_by_type_and_price("operativnaia-pamiat",float(all_price) * 0.07, float(all_price) * 0.13)
             bodys = get_components_by_type_and_price("korpusa",float(all_price) * 0.01, float(all_price) * 0.08) #поменять на 0.02
-            ssds = get_components_by_type_and_price("vnutrennie-tverdotelnye-nakopiteli-ssd",float(all_price) * 0.02, float(all_price) * 0.04)
+            ssds = get_components_by_type_and_price("vnutrennie-tverdotelnye-nakopiteli-ssd",float(all_price) * 0.01, float(all_price) * 0.04)
 
             print("motherboards = ", len(motherboards))
             print("processors = ", len(processors))
