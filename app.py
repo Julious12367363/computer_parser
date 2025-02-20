@@ -470,7 +470,7 @@ def create_app(config_name='dev'):
             processors = get_components_by_type_and_price("protsessory-cpu",float(all_price) * 0.10, float(all_price) * 0.16)
             videocards = get_components_by_type_and_price("videokarty",float(all_price) * 0.4, float(all_price) * 0.6)
             rams = get_components_by_type_and_price("operativnaia-pamiat",float(all_price) * 0.08, float(all_price) * 0.13)
-            bodys = get_components_by_type_and_price("korpusa",float(all_price) * 0.01, float(all_price) * 0.04) #поменять на 0.02
+            bodys = get_components_by_type_and_price("korpusa",float(all_price) * 0.01, float(all_price) * 0.08) #поменять на 0.02
             ssds = get_components_by_type_and_price("vnutrennie-tverdotelnye-nakopiteli-ssd",float(all_price) * 0.02, float(all_price) * 0.04)
 
             print("motherboards = ", len(motherboards))
@@ -484,7 +484,7 @@ def create_app(config_name='dev'):
             print("processors = ", extract_prices(processors),float(all_price) * 0.10, float(all_price) * 0.14)
             print("videocards = ", extract_prices(videocards),float(all_price) * 0.4, float(all_price) * 0.6)
             print("rams = ", extract_prices(rams),float(all_price) * 0.08, float(all_price) * 0.11)
-            print("bodys = ",extract_prices(bodys),float(all_price) * 0.01, float(all_price) * 0.04)
+            print("bodys = ",extract_prices(bodys),float(all_price) * 0.01, float(all_price) * 0.8)
             print("ssds = ", extract_prices(ssds),float(all_price) * 0.01, float(all_price) * 0.03)
 
             comp_result = compatible(all_price,

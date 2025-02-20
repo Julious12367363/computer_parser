@@ -184,7 +184,7 @@ def get_all_pci_versions(existing_versions):
     
     return all_versions
 
-def compatible(total_price,
+def compatible(total_price=100000,
                options=1,
                motherboards=[],
                processors=[],
@@ -196,7 +196,7 @@ def compatible(total_price,
     f = ''
     r = ''
     if options == 1:
-        m = 0,25 * total_price
+        p = 0,25 * total_price
     # motherboards = get_components_by_type_and_price("materinskie-platy",500,30000)
     # processors = get_components_by_type_and_price("protsessory-cpu",500,30000)
     # videocards = get_components_by_type_and_price("videokarty",500,30000)
