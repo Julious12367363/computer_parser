@@ -185,7 +185,7 @@ def get_links(driver):
     count = 0
 
     parts = {}
-    for url_for_pasrsing in URL[:8]:
+    for url_for_pasrsing in URL[:9]:
         component = url_for_pasrsing[2]
         list_components = []
         # url = f"https://market.yandex.ru/search?text={component}"

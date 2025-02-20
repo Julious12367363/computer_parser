@@ -66,7 +66,7 @@ def create_app(config_name='dev'):
             for link_obj in unparsed_links:
                 time.sleep(10)
                 try:
-                    # Парсим карточку компонента
+                    # Парсим карточку компонентаww
                     parsed_data = parse_card_component(link_obj.link)
                     if parsed_data and parsed_data['component_name'] and parsed_data['component_name'] != "" and parsed_data['price']:
                         # Обновляем объект ссылки
