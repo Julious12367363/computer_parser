@@ -55,31 +55,32 @@ URL = [
     ("Кулеры и системы охлаждения",
      "https://market.yandex.ru/catalog--kulery-i-sistemy-okhlazhdeniia-dlia-kompiuterov/26912910/list?hid=818965&rs=eJwzYgAAAGYAMw%2C%2C&allowCollapsing=1&local-offers-first=0",
      "kulery-i-sistemy-okhlazhdeniia-dlia-kompiuterov"),
-    ("Звуковые карты",
-     "https://market.yandex.ru/catalog--zvukovye-karty/55317/list?hid=91027&rs=eJwdUCurQkEY3KNJ_AWCwpoNos0XHE3CRRAxXuEk8T9YDj7AICabZbMoaLD4wHODiE0QwwXBgyI2g3AV292ZMgwz3zfz7cYb3qKxMYSoZjRa5ZRG55bWaF4WGu1jUqPbg-I84YoRdNMm_4EuOkAVXGK-wK07FHcCbs3pRuCqPpUjuPwCihJ6zTBzWnDllvMzoP2dQM6H90yB1h963foafAdXxrhbYeMQmWaemW_qPnDZBKo0bzDoRtGlunxvm10v9h740jHdAXv3_IER-S8nT9iyrrxHUg-toOfY6GG-n5OKaQEmn_k_Nmey4M6DLbXUP1YoiHA%2C&allowCollapsing=1&local-offers-first=0",
-     "zvukovye-karty"),
-    ("Видеозахват",
-     "https://market.yandex.ru/catalog--videozakhvat/26912950/list?hid=17444162",
-     "videozakhvat"),
-    ("Платы ввода-вывода",
-     "https://market.yandex.ru/catalog--platy-vvoda-vyvoda/26912990/list?hid=91030",
-     "platy-vvoda-vyvoda"),
-    ("Корпуса и док-станции для накопителей",
-     "https://market.yandex.ru/catalog--korpusa-i-dok-stantsii-dlia-nakopitelei/26913010/list?hid=6374360",
-     "korpusa-i-dok-stantsii-dlia-nakopitelei"),
-    ("Оптические приводы",
-     "https://market.yandex.ru/catalog--opticheskie-privody/26913030/list?hid=91035",
-     "opticheskie-privody"),
-    ("Рэковые корпуса",
-     "https://market.yandex.ru/catalog--rekovye-korpusa/26913050/list?hid=7683962",
-     "rekovye-korpusa"),
-    ("Термопаста",
-     "https://market.yandex.ru/catalog--termopasta/26913070/list?hid=7969496",
-     "termopasta"),
-    ("Накопители FDD, MOD, ZIP, Jazz, стримеры",
-     "https://market.yandex.ru/catalog--nakopiteli-fdd-mod-zip-jazz-strimery/26914251/list?hid=857712",
-     "nakopiteli-fdd-mod-zip-jazz-strimery"),
 ]
+
+# ("Звуковые карты",
+#      "https://market.yandex.ru/catalog--zvukovye-karty/55317/list?hid=91027&rs=eJwdUCurQkEY3KNJ_AWCwpoNos0XHE3CRRAxXuEk8T9YDj7AICabZbMoaLD4wHODiE0QwwXBgyI2g3AV292ZMgwz3zfz7cYb3qKxMYSoZjRa5ZRG55bWaF4WGu1jUqPbg-I84YoRdNMm_4EuOkAVXGK-wK07FHcCbs3pRuCqPpUjuPwCihJ6zTBzWnDllvMzoP2dQM6H90yB1h963foafAdXxrhbYeMQmWaemW_qPnDZBKo0bzDoRtGlunxvm10v9h740jHdAXv3_IER-S8nT9iyrrxHUg-toOfY6GG-n5OKaQEmn_k_Nmey4M6DLbXUP1YoiHA%2C&allowCollapsing=1&local-offers-first=0",
+#      "zvukovye-karty"),
+#     ("Видеозахват",
+#      "https://market.yandex.ru/catalog--videozakhvat/26912950/list?hid=17444162",
+#      "videozakhvat"),
+#     ("Платы ввода-вывода",
+#      "https://market.yandex.ru/catalog--platy-vvoda-vyvoda/26912990/list?hid=91030",
+#      "platy-vvoda-vyvoda"),
+#     ("Корпуса и док-станции для накопителей",
+#      "https://market.yandex.ru/catalog--korpusa-i-dok-stantsii-dlia-nakopitelei/26913010/list?hid=6374360",
+#      "korpusa-i-dok-stantsii-dlia-nakopitelei"),
+#     ("Оптические приводы",
+#      "https://market.yandex.ru/catalog--opticheskie-privody/26913030/list?hid=91035",
+#      "opticheskie-privody"),
+#     ("Рэковые корпуса",
+#      "https://market.yandex.ru/catalog--rekovye-korpusa/26913050/list?hid=7683962",
+#      "rekovye-korpusa"),
+#     ("Термопаста",
+#      "https://market.yandex.ru/catalog--termopasta/26913070/list?hid=7969496",
+#      "termopasta"),
+#     ("Накопители FDD, MOD, ZIP, Jazz, стримеры",
+#      "https://market.yandex.ru/catalog--nakopiteli-fdd-mod-zip-jazz-strimery/26914251/list?hid=857712",
+#      "nakopiteli-fdd-mod-zip-jazz-strimery"),
 
 
 def init_driver():
@@ -185,7 +186,8 @@ def get_links(driver):
     count = 0
 
     parts = {}
-    for url_for_pasrsing in URL[:9]:
+    URL_REVERSE = URL[::-1]
+    for url_for_pasrsing in URL_REVERSE[:9]:
         component = url_for_pasrsing[2]
         list_components = []
         # url = f"https://market.yandex.ru/search?text={component}"

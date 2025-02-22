@@ -57,14 +57,14 @@ def create_app(config_name='dev'):
                     else_=0  # В остальных случаях присваиваем значение 0
                 ),
                 desc(Links.date_parse)  # Сортируем по date_parse по убыванию, более новые даты первыми
-            ).limit(100).all()
+            ).limit(600).all()
 
             # Список для результатов
             parsed_results = []
 
             # Перебираем неспарсенные ссылки
             for link_obj in unparsed_links:
-                time.sleep(10)
+                time.sleep(8)
                 try:
                     # Парсим карточку компонентаww
                     parsed_data = parse_card_component(link_obj.link)
@@ -449,8 +449,8 @@ def create_app(config_name='dev'):
     def init_scheduler():
         """Инициализация планировщика задач"""
         scheduler = BackgroundScheduler()
-        scheduler.add_job(parse_links, 'interval', minutes=180)
-        scheduler.add_job(parse_unparsed_links, 'interval', minutes=25)
+        scheduler.add_job(parse_links, 'interval', minutes=250)
+        scheduler.add_job(parse_unparsed_links, 'interval', minutes=120)
         scheduler.start()
         return scheduler
 
@@ -678,7 +678,7 @@ def create_app(config_name='dev'):
                         Links.price <= max_price,
                         Links.is_actual == True
                     )
-                ).all()
+                ).order_by(desc(Links.date_parse)).all()
             else:
                 links = Links.query.filter(
                     and_(
