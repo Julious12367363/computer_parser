@@ -17,20 +17,26 @@
                     {% for component in result.components %}
                         <div class="accordion-item">
                           <h2 class="accordion-header" id="heading{{ loop.index }}">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
-                                <h2 href = "{{ component.url }}">{{ component.component_name }}</h2>
-                            </button>
-                            <a href="{{ component.url }}" target="_blank" class="btn btn-sm btn-outline-info">
-                                <i class="fas fa-external-link-alt"></i> Ссылка
-                            </a>
-                            <p>Цена: {{ component.price }}</p>
-                            {% if component.image_url %}
-                            <img src="{{ component.image_url[0] }}" class="img-thumbnail" alt="{{ component.component_name }}">
-                            {% endif %}
+                            <div class="image-container">
+                                {% if component.image_url %}
+                                <img src="{{ component.image_url[0] }}" class="img-thumbnail" alt="{{ component.component_name }}">
+                                {% else %}
+                                <div class="alt-image">
+                                    <span>{{ component.component_name }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                                <h2> <a href="{{ component.url }}" class="component-title">{{ component.component_name }} </a></h2>
+                                <p class="price">Цена: <span> {{ component.price }}</span></p>
+                                <a href="{{ component.url }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-external-link-alt"></i> Ссылка
+                                  </a>
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                                    <h3>Характеристики подробнее</h3>
+                                </button>
                           </h2>
                           <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}">
                             <div class="accordion-body">
-
                                 {% if component.fullSpecsGrouped %}
                                 <div class="accordion accordion-flush" id="nestedAccordion{{ loop.index }}">
                                     {% for group in component.fullSpecsGrouped.groups %}

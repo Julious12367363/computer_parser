@@ -553,10 +553,10 @@ def create_app(config_name='dev'):
             got_price = request.form['got_price']
             try:
                 c = int(got_price)
-                if c <=  20000:
+                if c <=  25000:
                     return render_template('home.html', got_price=got_price)
                 if got_price == None:
-                    got_price = "75000"
+                    got_price = "70000"
                 all_price = got_price
                 print("all_price = ",all_price)
                 selected_option = request.form.get('pc_option')
