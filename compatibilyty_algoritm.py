@@ -1,18 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import time
-import json
-import copy
+
 import re
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver import Chrome
-from bs4 import BeautifulSoup
-from selenium.webdriver.common.proxy import Proxy, ProxyType
 
 def get_parameter_by_key(data, search_key):
     if search_key in data:
@@ -123,80 +110,79 @@ result = {
 # }
 
 def extract_pci_version(new_string):
-    new_string = new_string.replace('-',' ')
-    # Используем регулярное выражение для поиска версии PCI
-    match = re.search(r'PCI Express (\d+)\.(\d+)', new_string, re.IGNORECASE)
+    new_string = new_string.lower().replace('-',' ')
+    match = re.search(r'pci express\s+(\d+)\.\d+', new_string, re.IGNORECASE)
     if match:
-        # Извлекаем основную версию и формируем нужный формат
-        major_version = match.group(1)
-        return [f'pci{major_version}']
-    return []
-
-def generate_pci_versions(input_array):
-    # Если массив пустой, возвращаем пустой массив
-    if not input_array:
+        try:
+            number = int(match.group(1))
+            return [number]
+        except:
+            if 'pci express' in new_string:
+                return [1]
+            return []
+    else:
+        if 'pci express' in new_string:
+                return [1]
         return []
-
-    # Извлекаем номер версии из первого элемента
-    version_string = input_array[0]
-    match = re.match(r'pci(\d+)', version_string, re.IGNORECASE)
-    
-    if match:
-        # Получаем максимальную версию
-        max_version = int(match.group(1))
-        # Генерируем список версий от 1 до max_version
-        return [f'pci{num}' for num in range(max_version, 0, -1)]
-    return []
 
 def extract_pci_versions(pci_string):
     #pci_string = "PCI-E 4.0 x16"
     #pci_string = "5 x PCI-E 3.0 x16, PCI-E 4.0 x16"
     #pci_string = "PCI-E 3.0 x1, PCI-E 3.0 x16"
     #pci_string = "2 x PCI 3.0 x16, PCI-E 3.0 x1"
+    #pci_string = "mini PCI-E x1"
+    #pci_string = "2 x mini PCI-E x1"
+    #pci_string = "2 x PCI-E 3.0 x16, 3 x PCI-E 2.0 x16, PCI-E 4.0 x16"
+    #pci_string = "PCI-E 3.0 x1, PCI-E 3.0 x16, количество PCI-E x1 - 1, количество PCI-E x16 - 1"
+    pci_string.strip()
     pci_string = pci_string.replace('x','')
+    if pci_string[0].isdigit() and pci_string[1] == '.' and pci_string[2].isdigit():
+        return [int(pci_string[0])]
     if pci_string[0].isalpha() == False:
         pci_string = pci_string[1:len(pci_string)]
-    #print(pci_string)
+    pci_string = pci_string.lower()
     pci_versions = [item.strip() for item in pci_string.split(',')]
     extracted_versions = []
     for version in pci_versions:
-        if "PCI-E" in version or "PCI-e" in version:
-            version_number = version.split(' ')[1].split('.')[0]
-            extracted_versions.append(int(version_number))
-    
-    return extracted_versions
+        if "pci-e" in version:
+            if 'mini' in version:
+                return ['1']
+            if 'поддержка' in version:
+                v = version.replace('поддержка ','')
+                version_number = v.split(' ')[1].split('.')[0]
+            else:
+                version_number = version.split(' ')[1].split('.')[0]
+            if version_number.isdigit():
+                try:
+                    if extracted_versions[0] < int(version_number):
+                        extracted_versions.append(int(version_number))
+                except:
+                    extracted_versions.append(int(version_number))
+    extracted_versions.sort()
+    return extracted_versions[::-1]
 
 def get_all_pci_versions(existing_versions):
     if not existing_versions:
-        return []
-    max_version = max(existing_versions)
+        return [0]
     all_versions = []
-
-    for version in range(1, max_version + 1):
-        if version in existing_versions:
-            all_versions.append(f'pci{version}')
-        elif version - 1 in existing_versions:
-            all_versions.append(f'pci{version}')
-
-    for version in range(max_version, 0, -1):
-        if f'pci{version}' not in all_versions:
-            all_versions.append(f'pci{version}')
+    max = existing_versions[0]
+    for i in range(1,max+1):
+        all_versions.append(i)
     
-    return all_versions
+    return all_versions[::-1]
 
-def compatible(total_price=100000,
-               options=1,
+def compatible(
                motherboards=[],
                processors=[],
                videocards=[],
                rams=[],
                bodys=[],
                ssds=[],
+               coolers=[],
+               charges=[]
                    ):
     f = ''
     r = ''
-    if options == 1:
-        p = 0,25 * total_price
     # motherboards = get_components_by_type_and_price("materinskie-platy",500,30000)
     # processors = get_components_by_type_and_price("protsessory-cpu",500,30000)
     # videocards = get_components_by_type_and_price("videokarty",500,30000)
@@ -259,297 +245,434 @@ def compatible(total_price=100000,
     v = 0
     b = 0
     s = 0
+    co = 0
+    ch = 0
+    mb = 0
+    pb = 0
+    rb = 0
+    vb = 0
+    bb = 0
+    sb = 0
+    cob = 0
+    chb = 0
+    map = 0
+    mar = 0
     for m in range(len(motherboards)):
-        #print("m = ", m,p,r,v,b,s)
+        print("m = ", m,p,r,v,b,s,co,ch)
+        mb = 0
+        pb = 0
+        rb = 0
+        vb = 0
+        bb = 0
+        sb = 0
+        cob = 0
+        chb = 0
+        map = 0
+        mar = 0
         for p in range(len(processors)):
-           # print("p = ", m,p,r,v,b,s)
-            for r in range(len(rams)):
-             #   print("r = ", m,p,r,v,b,s)
-                for v in range(len(videocards)):
-                 #   print("v = ", m,p,r,v,b,s)
-                    for b in range(len(bodys)):
-                      #  print("b = ", m,p,r,v,b,s)
-                        for s in range(len(ssds)):
-                           # print("s = ", m,p,r,v,b,s)
-                            mb = 0
-                            pb = 0
-                            rb = 0
-                            vb = 0
-                            bb = 0
-                            sb = 0
-                            map = 0
-                            mar = 0
-                            f = ''
-                            ra = ''
-                            try:
-                                q = motherboards[m]["component_name"]
-                                if q == None: mb = 1
-                                q = get_parameter_by_key(motherboards[m], 'Слоты PCI-E подробно')
-                                if q == None: mb = 1
-                                q = get_parameter_by_key(motherboards[m], 'Форм-фактор')
-                                if q == None: mb = 1
-                                q = get_parameter_by_key(motherboards[m], 'Чипсет')
-                                if q == None: mb = 1
-                                q = get_parameter_by_key(motherboards[m], 'Сокет')
-                                if q == None: mb = 1
-                                q = get_parameter_by_key(motherboards[m], 'Количество слотов оперативной памяти')
-                                if q == None: mb = 1
-                                q = get_parameter_by_key(motherboards[m], 'Тип памяти')
-                                if q == None: mb = 1
-                            except:
-                                mb = 1
-                            try:
-                                q = processors[p]["component_name"]
-                                if q == None: pb = 1
-                                q = get_parameter_by_key(processors[p], 'Сокет')
-                                if q == None: pb = 1
-                                q = get_parameter_by_key(processors[p], 'Тип памяти')
-                                if q == None: pb = 1
-                            except:
-                                pb = 1
-                            try:
-                                q = rams[r]["component_name"]
-                                if q == None: rb = 1
-                                if get_parameter_by_key(rams[r], 'Тип памяти') == None:
-                                    if get_parameter_by_key(rams[r], 'Тип') == None:
-                                        rb = 1
-                                    else:
-                                        w = get_parameter_by_key(rams[r], 'Тип')
-                                else:
-                                    w = get_parameter_by_key(rams[r], 'Тип памяти')
-                            except:
-                                rb = 1
-                            try:
-                                q = videocards[v]["component_name"]
-                                if q == None: vb = 1
-                                q = get_parameter_by_key(videocards[v], 'Тип подключения')
-                                if q == None: vb = 1
-                                q = get_parameter_by_key(videocards[v], 'Толщина')
-                                if q == None: vb = 1
-                                q = get_parameter_by_key(videocards[v], 'Длина')
-                                if q == None: vb = 1
-                                q = get_parameter_by_key(videocards[v], 'Высота')
-                                if q == None: vb = 1
-                            except:
-                                vb = 1
-                            try:
-                                q = bodys[b]["component_name"]
-                                if q == None: bb = 1
-                                q = get_parameter_by_key(bodys[b], 'Форм-фактор материнской платы')
-                                if q == None: bb = 1
-                                q = get_parameter_by_key(bodys[b], 'Ширина')
-                                if q == None: bb = 1
-                                q = get_parameter_by_key(bodys[b], 'Глубина')
-                                if q == None: bb = 1
-                                q = get_parameter_by_key(bodys[b], 'Высота')
-                                if q == None: bb = 1
-                                q = get_parameter_by_key(bodys[b], 'Максимальная длина видеокарты')
-                                if q == None: bb = 1
-                            except:
-                                bb = 1
-                            try:
-                                q = ssds[s]["component_name"]
-                                if q == None: sb = 1
-                                q = get_parameter_by_key(ssds[s], 'Форм-фактор')
-                            except:
-                                sb = 1
-                            if mb or pb or rb or vb or bb == 1:
-                                break
-                            if sb == 0:
-                                components = {
-                                    "motherboard": {
-                                        "name": motherboards[m]["component_name"],
-                                        "connect": get_parameter_by_key(motherboards[m], 'Слоты PCI-E подробно'),
-                                        "form_factor": get_parameter_by_key(motherboards[m], 'Форм-фактор'),
-                                        "chipset" : get_parameter_by_key(motherboards[m], 'Чипсет'),
-                                        "socket_type": get_parameter_by_key(motherboards[m], 'Сокет'),
-                                        "ram_slots": get_parameter_by_key(motherboards[m], 'Количество слотов оперативной памяти'),
-                                        "compatible_ram": get_parameter_by_key(motherboards[m], 'Тип памяти')
-                                    },
-                                    "processor": {
-                                        "name": processors[p]["component_name"],
-                                        "socket_type": get_parameter_by_key(processors[p], 'Сокет'),
-                                        "type" : get_parameter_by_key(processors[p], 'Тип памяти')
-                                    },
-                                    "ram": {
-                                        "name": rams[r]["component_name"],
-                                        "type": w,
-                                    },
-                                    "video_card": {
-                                        "name": videocards[v]["component_name"],
-                                        "connect": get_parameter_by_key(videocards[v], 'Тип подключения'),
-                                        "width": get_parameter_by_key(videocards[v], 'Толщина'),
-                                        "length": get_parameter_by_key(videocards[v], 'Длина'),
-                                        "hight": get_parameter_by_key(videocards[v], 'Высота'),
-
-                                    },
-                                    "body": {
-                                        "name": bodys[b]["component_name"],
-                                        "form_factor":get_parameter_by_key(bodys[b], 'Форм-фактор материнской платы'),
-                                        "width": get_parameter_by_key(bodys[b], 'Глубина'),
-                                        "length": get_parameter_by_key(bodys[b], 'Ширина'),
-                                        "hight": get_parameter_by_key(bodys[b], 'Высота'),
-                                        "max_video_card": get_parameter_by_key(bodys[b], 'Максимальная длина видеокарты'),
-                                    },
-                                    "ssd": {
-                                        "name": ssds[s]["component_name"],
-                                        "form_factor":get_parameter_by_key(ssds[s], 'Форм-фактор'),
-                                    }
-                                }
-                                #print("components['motherboard']['connect'] = ",components["motherboard"]["connect"])
-                                #print("components['video_card']['connect'] = ",components["video_card"]["connect"])
-                                pci_string = components["motherboard"]["connect"]
-                                extracted_versions = extract_pci_versions(pci_string)
-                                mother_connect = get_all_pci_versions(extracted_versions)
-                                video_connects = generate_pci_versions(extract_pci_version(components["video_card"]["connect"]))
-                                # print("mother_connect", mother_connect) 
-                                # print("video_connects = ",video_connects)
-                                print()
-                                print("motherboards[m] = ",motherboards[m]["url"])
-                                print()
-                                print("processors[p] = ",processors[p]["url"])
-                                print()
-                                print("rams[r] = ",rams[r]['url'])
-                                print()
-                                print("videocards[v] = ",videocards[v]['url'])
-                                print()
-                                print("bodys[b] = ",bodys[b]['url'])
-                                print()
-                                print("ssds[s] = ",ssds[s]['url'])
-                                print()
-                                # for i in range(len(ssds)):
-                                #     print()
-                                #     print("i = ",i)
-                                #     print("ssds[s] = ",ssds[i]["url"])
-                                #     print()
-
-                                input_string = components["motherboard"]["compatible_ram"]
-                                for word in ["DIMM", "SDRAM"]:
-                                    input_string = input_string.replace(word, "")
-                                result_string = ', '.join(part.strip() for part in input_string.split(',') if part.strip())
-
-                                for i in range(len(result_string)):
-                                    if result_string[i] != '-' and result_string[i] != ' ':
-                                        ra += result_string[i]
-
-                                for i in range(len(components["body"]["form_factor"])):
-                                    if components["body"]["form_factor"][i] != '-' and components["body"]["form_factor"][i] != ' ':
-                                        f += components["body"]["form_factor"][i]
-
-                                form_factors = f.split(',')
-                                for i in range(len(form_factors)):
-                                    form_factors[i] = form_factors[i].lower()
-
-                                RAMS = ra.split(',')
-                                for i in range(len(RAMS)):
-                                    RAMS[i] = RAMS[i].lower()
-
-                                proc = components["processor"]["type"].lower()
-                                processor = proc.split(',')
-
-                                m_socket = components["motherboard"]["socket_type"].lower()
-                                m_socket = m_socket.replace('socket','')
-                                m_socket = m_socket.replace('(','')
-                                m_socket = m_socket.replace('e)','')
-                                m_socket = m_socket.replace(' ','')
-
-                                p_socket = components["processor"]["socket_type"].lower()
-                                p_socket = p_socket.replace('socket','')
-                                p_socket = p_socket.replace('()','')
-                                p_socket = p_socket.replace('e)','')
-                                p_socket = p_socket.replace(' ','')
-
-                                # print("form factor sizes and body sizes = ",sizes[components["motherboard"]["form_factor"].lower()]["length"], components["body"]["length"][:3], sizes[components["motherboard"]["form_factor"].lower()]["width"], components["body"]["width"][:3])
-                                # print("ssd = ", components["ssd"]["name"])
-                                # print("ssd = ", components["ssd"]["form_factor"][:3])
-                                # print("ssd = ", components["ssd"]["form_factor"])
-                                # print("m_socket = ", m_socket)
-                                # print("p_socket = ", p_socket)
-                                # print("processor = ",processor)
-                                # print("form_factors= ", form_factors)
-                                # print("f= ",f.lower())
-                                # print("mother= ", components["motherboard"]["form_factor"].lower())
-                                # print("RAMS= ", RAMS)
-                                # print("ra= ",ra.lower())
-                                # print('Тип памяти/Тип = ',w)
-                                # print("ram= ", components["ram"]["type"][:4].lower())
-                                
-                                compatible = True
-
-                                if p_socket != m_socket: #motherboard and processor
-                                    print(f"{components['processor']['socket_type']} cant conect {components['motherboard']['socket_type']}.")
-                                    compatible = False
-                                    pb = 1
-                                    map = 1
-
-                                if components["ram"]["type"][:4].lower() not in RAMS: #motherboard and ram
-                                    print(f'MAR {components["ram"]["type"][:4].lower()} cant conect {RAMS}')
-                                    compatible = False
-                                    rb = 1
-                                    mar = 1
-
-                                if components["ram"]["type"][:4].lower() not in processor: #processor and ram
-                                    print(f'PAR {components["ram"]["type"][:4].lower()} cant conect {processor}')
-                                    compatible = False
-                                    if map == 0 and mar == 0:
-                                        rb = 1
-
-                                if len(mother_connect) == 2: # motherboard and videocard
-                                    if mother_connect[0] not in video_connects and mother_connect[1] not in video_connects:
-                                        print(f'2, {mother_connect} not in {video_connects}')
-                                        compatible = False
-                                        vb = 1
-                                        
-                                if len(mother_connect) == 1: # motherboard and videocard
-                                    if mother_connect[0] not in video_connects:
-                                        print(f'1, {mother_connect} not in {video_connects}')
-                                        compatible = False
-                                        vb = 1 
-
-                                if float(components["body"]["max_video_card"][:3]) < float(components["video_card"]["length"][:3]): #videocard and body
-                                    print(f'{components["body"]["max_video_card"] < components["video_card"]["length"]}')
-                                    compatible = False
-                                    bb = 1
-
-                                if components["motherboard"]["form_factor"].lower() not in form_factors: # motherboard and body
-                                    print(f'{components["motherboard"]["form_factor"].lower()} not in {form_factors} ')
-                                    compatible = False
-                                    bb = 1
-                            
-                                if components["ssd"]["form_factor"][:3] != "3.5": #ssd
-                                    if (components["ssd"]["form_factor"][:3] != "M.2"):
-                                        print(f'ssd not 3,5 and not M.2 {components["ssd"]["form_factor"][:3]}')
-                                        compatible = False
-                                    else:
-                                        try:
-                                            ssd_connect = get_parameter_by_key(motherboards[m], 'Количество разъемов M.2')
-                                            try:
-                                                if int(ssd_connect) > 0:
-                                                    pass
-                                                else:
-                                                    print(f'not found get_parameter_by_key(motherboards[m], "Количество разъемов M.2")')
-                                                    compatible = False
-                                            except:
-                                                print(f'Not found get_parameter_by_key(motherboards[m], "Количество разъемов M.2")')
-                                                compatible = False
-                                        except:
-                                            print(f'NNot found get_parameter_by_key(motherboards[m], "Количество разъемов M.2")')
-                                            compatible = False
-
-                                if compatible:
-                                    print("all good")
-                                    for key in components:
-                                        print(f"- {components[key]['name']}")
-                                    print()
-                                    return [motherboards[m],processors[p],rams[r],videocards[v],bodys[b],ssds[s]]
-                        if  mb or pb or rb or vb == 1:
-                            break
-                    if  mb or pb or rb == 1:
-                        break
-                if  mb or pb == 1:
-                    break
+            #print("p = ", m,p,r,v,b,s,co,ch)
+            pb = 0
+            rb = 0
+            vb = 0
+            bb = 0
+            sb = 0
+            cob = 0
+            chb = 0
+            map = 0
+            mar = 0
             if  mb == 1:
                 break
+            for r in range(len(rams)):
+                #print("r = ", m,p,r,v,b,s,co,ch)
+                rb = 0
+                vb = 0
+                bb = 0
+                sb = 0
+                cob = 0
+                chb = 0
+                map = 0
+                mar = 0
+                if  mb or pb == 1:
+                    break
+                for v in range(len(videocards)):
+                    #print("v = ", m,p,r,v,b,s,co,ch)
+                    vb = 0
+                    bb = 0
+                    sb = 0
+                    cob = 0
+                    chb = 0
+                    map = 0
+                    mar = 0
+                    if  mb or pb or rb == 1:
+                        break
+                    for b in range(len(bodys)):
+                        bb = 0
+                        sb = 0
+                        cob = 0
+                        chb = 0
+                        map = 0
+                        mar = 0
+                        if  mb or pb or rb or vb == 1:
+                            break
+                        for s in range(len(ssds)):
+                            sb = 0
+                            cob = 0
+                            chb = 0
+                            map = 0
+                            mar = 0
+                            if mb or pb or rb or vb or bb == 1:
+                                break
+                            for co in range(len(coolers)): 
+                                cob = 0
+                                chb = 0
+                                map = 0
+                                mar = 0
+                                if mb or pb or rb or vb or bb or sb == 1:
+                                    break
+                                for ch in range(len(charges)):
+                                    if mb or pb or rb or vb or bb or sb or cob == 1:
+                                        break
+                                    cooler_socket = ''
+                                    count = 0
+                                    mb = 0
+                                    pb = 0
+                                    rb = 0
+                                    vb = 0
+                                    bb = 0
+                                    sb = 0
+                                    cob = 0
+                                    chb = 0
+                                    map = 0
+                                    mar = 0
+                                    w = ''
+                                    f = ''
+                                    ra = ''
+                                    c = ''
+                                    try:
+                                        q = motherboards[m]["component_name"]
+                                        if q == None: mb = 1
+                                        q = get_parameter_by_key(motherboards[m], 'Слоты PCI-E подробно')
+                                        if q == None: mb = 1
+                                        q = get_parameter_by_key(motherboards[m], 'Форм-фактор')
+                                        if q == None: mb = 1
+                                        q = get_parameter_by_key(motherboards[m], 'Сокет')
+                                        if q == None: mb = 1
+                                        q = get_parameter_by_key(motherboards[m], 'Тип памяти')
+                                        if q == None: mb = 1
+                                    except:
+                                        mb = 1
+                                    try:
+                                        q = processors[p]["component_name"]
+                                        if q == None: pb = 1
+                                        q = get_parameter_by_key(processors[p], 'Сокет')
+                                        if q == None: pb = 1
+                                        q = get_parameter_by_key(processors[p], 'Тип памяти')
+                                        if q == None: pb = 1
+                                        q = get_parameter_by_key(processors[p],'Тепловыделение')
+                                        if q == None: pb = 1
+                                    except:
+                                        pb = 1
+                                    try:
+                                        q = rams[r]["component_name"]
+                                        if q == None: rb = 1
+                                        if get_parameter_by_key(rams[r], 'Тип памяти') == None:
+                                            if get_parameter_by_key(rams[r], 'Тип') == None:
+                                                rb = 1
+                                            else:
+                                                w = get_parameter_by_key(rams[r], 'Тип')
+                                        else:
+                                            w = get_parameter_by_key(rams[r], 'Тип памяти')
+                                    except:
+                                        rb = 1
+                                    try:
+                                        q = videocards[v]["component_name"]
+                                        if q == None: vb = 1
+                                        q = get_parameter_by_key(videocards[v], 'Тип подключения')
+                                        if q == None: vb = 1
+                                        q = get_parameter_by_key(videocards[v], 'Длина')
+                                        if q == None: vb = 1
+                                    except:
+                                        vb = 1
+                                    try:
+                                        q = bodys[b]["component_name"]
+                                        if q == None: bb = 1
+                                        q = get_parameter_by_key(bodys[b], 'Форм-фактор материнской платы')
+                                        if q == None: bb = 1
+                                        q = get_parameter_by_key(bodys[b], 'Ширина')
+                                        if q == None: bb = 1
+                                        q = get_parameter_by_key(bodys[b], 'Глубина')
+                                        if q == None: bb = 1
+                                        q = get_parameter_by_key(bodys[b], 'Высота')
+                                        if q == None: bb = 1
+                                        q = get_parameter_by_key(bodys[b], 'Максимальная длина видеокарты')
+                                        if q == None: bb = 1
+                                    except:
+                                        bb = 1
+                                    try:
+                                        q = ssds[s]["component_name"]
+                                        if q == None: sb = 1
+                                        q = get_parameter_by_key(ssds[s], 'Форм-фактор')
+                                        if q == None: sb = 1
+                                    except:
+                                        sb = 1
+                                    try:
+                                        q = coolers[co]["component_name"]
+                                        if q == None: cob = 1
+                                        q = get_parameter_by_key(coolers[co], 'Сокет')
+                                        if q == None: 
+                                            if get_parameter_by_key(coolers[co], 'Сокет процессора') == None: cob = 1
+                                            else:
+                                                cooler_socket = get_parameter_by_key(coolers[co], 'Сокет процессора')
+                                        else:
+                                            cooler_socket = get_parameter_by_key(coolers[co], 'Сокет')
+                                        #print("cooler_socket = ",cooler_socket)
+                                        q = get_parameter_by_key(coolers[co],'Максимальная рассеиваемая мощность (TDP), Вт')
+                                        if q == None: cob = 1
+                                    except:
+                                        cob = 1
+                                    try:
+                                        q = charges[ch]["component_name"]
+                                        if q == None: chb = 1
+                                        q = get_parameter_by_key(charges[ch], 'Форм-фактор')
+                                        if q == None: chb = 1
+                                        q = get_parameter_by_key(charges[ch], 'Мощность')
+                                        if q == None: chb = 1
+                                    except:
+                                        chb = 1
+                                    if mb or pb or rb or vb or bb or sb or cob == 1:
+                                        break
+                                    try:
+                                        pci = get_parameter_by_key(motherboards[m], 'Слоты PCI-E подробно')
+                                        if pci == None:
+                                            pci = get_parameter_by_key(motherboards[m], 'Версия PCI Express')
+                                            if pci == None:
+                                                mb = 1
+                                    except:
+                                        mb = 1 
+                                    if chb == 0:
+                                        components = {
+                                            "motherboard": {
+                                                "name": motherboards[m]["component_name"],
+                                                "connect": pci,
+                                                "form_factor": get_parameter_by_key(motherboards[m], 'Форм-фактор'),
+                                                "socket_type": get_parameter_by_key(motherboards[m], 'Сокет'),
+                                                "compatible_ram": get_parameter_by_key(motherboards[m], 'Тип памяти')
+                                            },
+                                            "processor": {
+                                                "name": processors[p]["component_name"],
+                                                "socket_type": get_parameter_by_key(processors[p], 'Сокет'),
+                                                "type" : get_parameter_by_key(processors[p], 'Тип памяти'),
+                                                "power" : get_parameter_by_key(processors[p],'Тепловыделение'),
+                                            },
+                                            "ram": {
+                                                "name": rams[r]["component_name"],
+                                                "type": w,
+                                            },
+                                            "video_card": {
+                                                "name": videocards[v]["component_name"],
+                                                "connect": get_parameter_by_key(videocards[v], 'Тип подключения'),
+                                                "width": get_parameter_by_key(videocards[v], 'Толщина'),
+                                                "length": get_parameter_by_key(videocards[v], 'Длина'),
+                                                "hight": get_parameter_by_key(videocards[v], 'Высота'),
+
+                                            },
+                                            "body": {
+                                                "name": bodys[b]["component_name"],
+                                                "form_factor":get_parameter_by_key(bodys[b], 'Форм-фактор материнской платы'),
+                                                "width": get_parameter_by_key(bodys[b], 'Глубина'),
+                                                "length": get_parameter_by_key(bodys[b], 'Ширина'),
+                                                "hight": get_parameter_by_key(bodys[b], 'Высота'),
+                                                "max_video_card": get_parameter_by_key(bodys[b], 'Максимальная длина видеокарты'),
+                                            },
+                                            "ssd": {
+                                                "name": ssds[s]["component_name"],
+                                                "form_factor":get_parameter_by_key(ssds[s], 'Форм-фактор'),
+                                            },
+                                            "coolers":{
+                                                "name": coolers[co]["component_name"],
+                                                "socket_type": cooler_socket,
+                                                "power" : get_parameter_by_key(coolers[co],'Максимальная рассеиваемая мощность (TDP), Вт'),
+                                            },
+                                            "charges":{
+                                                "name": charges[ch]["component_name"],
+                                                "form_factor": get_parameter_by_key(charges[ch], 'Форм-фактор'),
+                                                "power": get_parameter_by_key(charges[ch], 'Мощность'),
+                                            }
+                                        }
+                                        cooler_power = ''
+                                        processor_power = ''
+                                        p_power = components["processor"]['power']
+                                        c_power = components["coolers"]['power']
+                                        for i in range(len(p_power)):
+                                            if p_power[i].isdigit():
+                                                processor_power += p_power[i]
+                                        for i in range(len(c_power)):
+                                            if c_power[i].isdigit():
+                                                cooler_power += c_power[i]
+
+                                        body_factor = components["body"]["form_factor"]
+                                        power_factor = components["charges"]["form_factor"]
+                                        pci_string = components["motherboard"]["connect"]
+                                        mother_connect = get_all_pci_versions(extract_pci_versions(pci_string))
+                                        #print(mother_connect)
+                                        video_connects = get_all_pci_versions(extract_pci_version(components["video_card"]["connect"]))
+                                        #print(video_connects)
+                                        input_string = components["motherboard"]["compatible_ram"]
+                                        for word in ["DIMM", "SDRAM"]:
+                                            input_string = input_string.replace(word, "")
+                                        result_string = ', '.join(part.strip() for part in input_string.split(',') if part.strip())
+
+                                        for i in range(len(result_string)):
+                                            if result_string[i] != '-' and result_string[i] != ' ':
+                                                ra += result_string[i]
+
+                                        for i in range(len(body_factor)):
+                                            if body_factor[i] != '-' and body_factor[i] != ' ':
+                                                f += body_factor[i].lower()
+                                        
+                                        for i in range(len(power_factor)):
+                                            if power_factor[i] != '-' and power_factor[i] != ' ' and power_factor[i].isalpha():
+                                                c += power_factor[i].lower()
+                                            #print(c,power_factor[i])
+
+                                        charge_factor = c.split(',')
+                                        for i in range(len(charge_factor)):
+                                            charge_factor[i] = charge_factor[i].lower()
+
+                                        form_factors = f.split(',')
+                                        for i in range(len(form_factors)):
+                                            form_factors[i] = form_factors[i].lower()
+
+                                        RAMS = ra.split(',')
+                                        for i in range(len(RAMS)):
+                                            RAMS[i] = RAMS[i].lower()
+
+                                        proc = components["processor"]["type"].lower()
+                                        processor = proc.split(',')
+
+                                        m_socket = components["motherboard"]["socket_type"].lower()
+                                        m_socket = m_socket.replace('socket','')
+                                        m_socket = m_socket.replace('(','')
+                                        m_socket = m_socket.replace('e)','')
+                                        m_socket = m_socket.replace(' ','')
+
+                                        p_socket = components["processor"]["socket_type"].lower()
+                                        p_socket = p_socket.replace('socket','')
+                                        p_socket = p_socket.replace('()','')
+                                        p_socket = p_socket.replace('e)','')
+                                        p_socket = p_socket.replace(' ','')
+
+                                        sock = ''
+                                        sok = cooler_socket
+                                        sok = sok.strip().lower()
+                                        if 'socket' in sok:
+                                            sok = sok.replace('socket ','')
+                                        for i in range(len(sok)):
+                                            if sok[i] != '-' and sok[i] != ' ':
+                                                sock += sok[i]
+                                        c_socket = sock.split(',')
+                                        charge_power = ''
+                                        ch_power = get_parameter_by_key(charges[ch], 'Мощность').lower()
+                                        for i in range(len(ch_power)):
+                                            if ch_power[i].isdigit():
+                                                charge_power += ch_power[i]
+                                        compatible = True
+                                        if p_socket != m_socket: #motherboard and processor
+                                            #print(f"{components['processor']['socket_type']} cant conect {components['motherboard']['socket_type']}.")
+                                            compatible = False
+                                            pb = 1
+                                            map = 1
+
+                                        if components["ram"]["type"][:4].lower() not in RAMS: #motherboard and ram
+                                            #print(f'MAR {components["ram"]["type"][:4].lower()} cant conect {RAMS}')
+                                            compatible = False
+                                            rb = 1
+                                            mar = 1
+
+                                        if components["ram"]["type"][:4].lower() not in processor: #processor and ram
+                                            #print(f'PAR {components["ram"]["type"][:4].lower()} cant conect {processor}')
+                                            compatible = False
+                                            if map == 0 and mar == 0:
+                                                rb = 1
+
+                                        if video_connects[0] == 0: # motherboard and videocard
+                                            #print(f'{video_connects} didn`t exsist')
+                                            compatible = False
+                                            vb = 1
+
+                                        if mother_connect[0] == 0:  # motherboard and videocard
+                                            #print(f'{mother_connect} didn`t exsist')
+                                            compatible = False
+                                            mb = 1
+
+                                        if float(components["body"]["max_video_card"][:3]) < float(components["video_card"]["length"][:3]): #videocard and body
+                                            #print(f'{components["body"]["max_video_card"]} < {components["video_card"]["length"]}')
+                                            compatible = False
+                                            bb = 1
+
+                                        if components["motherboard"]["form_factor"].lower() not in form_factors: # motherboard and body
+                                            #print(f'{components["motherboard"]["form_factor"].lower()} not in {form_factors} ')
+                                            compatible = False
+                                            bb = 1
+                                    
+                                        if components["ssd"]["form_factor"][:3] != "3.5": #ssd
+                                            if (components["ssd"]["form_factor"][:3] != "M.2"):
+                                                #print(f'ssd not 3,5 and not M.2 {components["ssd"]["form_factor"][:3]}')
+                                                compatible = False
+                                                sb = 1
+                                            else:
+                                                try:
+                                                    ssd_connect = get_parameter_by_key(motherboards[m], 'Количество разъемов M.2')
+                                                    try:
+                                                        if int(ssd_connect) > 0:
+                                                            pass
+                                                        else:
+                                                            #print(f'not found get_parameter_by_key(motherboards[m], "Количество разъемов M.2")')
+                                                            compatible = False
+                                                    except:
+                                                        #print(f'Not found get_parameter_by_key(motherboards[m], "Количество разъемов M.2")')
+                                                        compatible = False
+                                                except:
+                                                    #print(f'NNot found get_parameter_by_key(motherboards[m], "Количество разъемов M.2")')
+                                                    compatible = False
+                                        
+                                        if int(processor_power) > int(cooler_power): #processor and cooler
+                                            #print(f' proc_p > cool_p {processor_power} > {cooler_power}, {m},{p},{r},{v},{b},{s},{co},{ch}')
+                                            compatible = False
+                                            cob = 1
+                                            break
+                                        
+                                        if p_socket not in c_socket:
+                                            #print(f'p_socket not in c_socket {p_socket} <> {c_socket}')
+                                            compatible = False
+                                            cob = 1
+
+                                        for i in range(len(charge_factor)):
+                                            for j in range(len(form_factors)):
+                                                if charge_factor[i] in form_factors[j]:
+                                                    count = 1
+                                                    break
+                                        if count == 0:
+                                            #print(f'charge_factor not in form_factors {charge_factor} {form_factors}') 
+                                            compatible = False
+                                            chb = 1
+
+                                        try:
+                                            if int(charge_power) < 500:
+                                                #print(f'power {get_parameter_by_key(charges[ch], "Мощность")} < 500')
+                                                compatible = False
+                                                chb = 1
+                                        except:
+                                            #print(f'power {get_parameter_by_key(charges[ch], "Мощность")} < 500')
+                                            compatible = False
+                                            chb = 1
+
+                                        if compatible:
+                                            for key in components:
+                                                print(f"- {components[key]['name']}")
+                                            print()
+                                            print(f'{m},{p},{r},{v},{b},{s},{co},{ch}')
+                                            return [motherboards[m],processors[p],rams[r],videocards[v],bodys[b],ssds[s],coolers[co],charges[ch]]
 if __name__ == "__main__":
     compatible()
     

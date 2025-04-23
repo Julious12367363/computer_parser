@@ -5,12 +5,13 @@ from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
-
-
+    
 class Config:
     # Базовые настройки
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key'
-
+    SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+    
     # Настройки SQLite по умолчанию
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///links.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -35,7 +36,7 @@ class ProductionConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///test_links.db'
 
 
 # Выбор конфигурации

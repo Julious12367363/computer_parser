@@ -1,38 +1,72 @@
-    <div class="container pt-5">
-			<div class="row justify-content-between">
-				<div class="col">
-					<a class="navbar-brand" href="{{ url_for('home') }}">Подбор<span>комплектующих</span></a>
-				</div>
-				<div class="col d-flex justify-content-end">
-					<div class="social-media">
-		    		<p class="mb-0 d-flex">
-		    			<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-telegram"><i class="sr-only">Телеграм</i></span></a>
-		    			<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-twitter"><i class="sr-only">Twitter</i></span></a>
-		    			<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-instagram"><i class="sr-only">Instagram</i></span></a>
-		    			<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-dribbble"><i class="sr-only">Dribbble</i></span></a>
-		    		</p>
-	        </div>
-				</div>
-			</div>
-		</div>
-		<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-	    <div class="container">
-
-	      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-	        <span class="fa fa-bars"></span> Меню
-	      </button>
-	      <div class="collapse navbar-collapse" id="ftco-nav">
-	        <ul class="navbar-nav mr-auto">
-	        	<li class="nav-item active"><a href="{{ url_for('home') }}" class="nav-link">Подбор</a></li>
-	        	<li class="nav-item"><a href="{{ url_for('about') }}" class="nav-link">О нас</a></li>
-				<!--
+<div class="container pt-5">
+  <div class="row justify-content-between">
+    <div class="col">
+      <a class="navbar-brand" href="{{ url_for('home') }}"
+        >Подбор <span>комплектующих</span></a
+      >
+    </div>
+    <!-- <div class="col d-flex justify-content-end">
+      <div class="social-media">
+        <p class="mb-0 d-flex">
+          <a href="#" class="d-flex align-items-center justify-content-center"
+            ><span class="fa fa-telegram"
+              ><i class="sr-only">Телеграм</i></span
+            ></a
+          >
+          <a href="#" class="d-flex align-items-center justify-content-center"
+            ><span class="fa fa-twitter"
+              ><i class="sr-only">Twitter</i></span
+            ></a
+          >
+          <a href="#" class="d-flex align-items-center justify-content-center"
+            ><span class="fa fa-instagram"
+              ><i class="sr-only">Instagram</i></span
+            ></a
+          >
+          <a href="#" class="d-flex align-items-center justify-content-center"
+            ><span class="fa fa-dribbble"
+              ><i class="sr-only">Dribbble</i></span
+            ></a
+          >
+        </p>
+      </div>
+    </div> -->
+  </div>
+</div>
+<nav
+  class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light"
+  id="ftco-navbar"
+>
+  <div class="container">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#ftco-nav"
+      aria-controls="ftco-nav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="fa fa-bars"></span> Меню
+    </button>
+    <div class="collapse navbar-collapse" id="ftco-nav">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a href="{{ url_for('home') }}" class="nav-link">Подбор</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('about') }}" class="nav-link">О нас</a>
+        </li>
+        <!--
 	        	<li class="nav-item"><a href="team.html" class="nav-link">Наша команда</a></li>
 	        	<li class="nav-item"><a href="project.html" class="nav-link">Проекты</a></li>
 	        	<li class="nav-item"><a href="blog.html" class="nav-link">Блог</a></li>
 				-->
-	          <li class="nav-item"><a href="{{ url_for('contact') }}" class="nav-link">Контакты</a></li>
-	        </ul>
-	      </div>
-	    </div>
-	  </nav>
-    <!-- END nav -->
+        <li class="nav-item">
+          <a href="{{ url_for('contact') }}" class="nav-link">Контакты</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- END nav -->

@@ -1,90 +1,137 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="hero-wrap">
-	<div class="home-slider owl-carousel">
-	  <div class="slider-item" style="background-image:url(static/images/bg_1.jpg);">
-		  <div class="overlay"></div>
-		<div class="container">
-		  <div class="row no-gutters slider-text align-items-center justify-content-center">
-			  <div class="col-md-12 ftco-animate">
-				  <div class="text w-100 text-center">
-					  <h2>Мы здесь, чтобы помочь вам</h2>
-					<h1 class="mb-3">Подбор комплектующих</h1>
-				</div>
-			  </div>
-			</div>
-		</div>
-	  </div>
+  <div class="home-slider owl-carousel">
+    <div
+      class="slider-item"
+      style="background-image: url(static/images/bg_1.jpg)"
+    >
+      <div class="overlay"></div>
+      <div class="container">
+        <div
+          class="row no-gutters slider-text align-items-center justify-content-center"
+        >
+          <div class="col-md-12 ftco-animate">
+            <div class="text w-100 text-center">
+              <h2>Мы здесь, чтобы помочь вам</h2>
+              <h1 class="mb-3">Подбор комплектующих</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-	  <div class="slider-item" style="background-image:url(static/images/bg_2.jpg);">
-		  <div class="overlay"></div>
-		<div class="container">
-		  <div class="row no-gutters slider-text align-items-center justify-content-center">
-			  <div class="col-md-12 ftco-animate">
-				  <div class="text w-100 text-center">
-					  <h2>Лучший подбор комплектующих</h2>
-					<h1 class="mb-3">Мы подбираем комплектующие</h1>
-				</div>
-			  </div>
-			</div>
-		</div>
-	  </div>
+    <div
+      class="slider-item"
+      style="background-image: url(static/images/bg_2.jpg)"
+    >
+      <div class="overlay"></div>
+      <div class="container">
+        <div
+          class="row no-gutters slider-text align-items-center justify-content-center"
+        >
+          <div class="col-md-12 ftco-animate">
+            <div class="text w-100 text-center">
+              <h2>Лучший подбор комплектующих</h2>
+              <h1 class="mb-3">Мы подбираем комплектующие</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-	  <div class="slider-item" style="background-image:url(static/images/bg_3.jpg);">
-		  <div class="overlay"></div>
-		<div class="container">
-		  <div class="row no-gutters slider-text align-items-center justify-content-center">
-			  <div class="col-md-12 ftco-animate">
-				  <div class="text w-100 text-center">
-					  <h2>Мы подберем вам комплектующие</h2>
-					<h1 class="mb-3">Профессиональный подбор комплектующих</h1>
-				</div>
-			  </div>
-			</div>
-		</div>
-	  </div>
-	</div>
+    <div
+      class="slider-item"
+      style="background-image: url(static/images/bg_3.jpg)"
+    >
+      <div class="overlay"></div>
+      <div class="container">
+        <div
+          class="row no-gutters slider-text align-items-center justify-content-center"
+        >
+          <div class="col-md-12 ftco-animate">
+            <div class="text w-100 text-center">
+              <h2>Мы подберем вам комплектующие</h2>
+              <h1 class="mb-3">Профессиональный подбор комплектующих</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+</div>
 
-  <section class="ftco-section ftco-no-pb ftco-no-pt mb-5">
-	  <div class="container">
-		  <div class="row">
-			  <div class="col-md-12">
-				  <div class="bg-primary w-100 rounded px-md-0 px-4">
-					  <div class="row d-flex justify-content-center">
-						  <div class="col-lg-8 py-4">
-							  <div class="row">
-								  <div class="col-md-6 d-flex align-items-center">
-									  <h2 class="mb-0" style="color:white; font-size: 24px;">Укажите желаемую стоимость сборки</h2>
-									</div>
-									<div class="col-md-6 d-flex align-items-center">
-										<form action="" method="POST" class="subscribe-form">
-											<div class="form-group d-flex">
-												<input type="text" class="form-control" value="75000" id = "got_price" name = "got_price">
-												<input type="submit" value="Искать" class="submit px-3">
-											</div>
-										</form>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-  </section>
-  <div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="title" style="text-align: center;"> <!-- Используйте text-align для центрирования -->
-                <h4 class="mb-0" style="color: black; font-size: 24px; margin-bottom: 20px;">
-                    Суммы {{ got_price }} недостаточно. Попробуйте еще раз.
-                </h4>
+<section class="ftco-section ftco-no-pb ftco-no-pt mb-5 full-width-section">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bg-primary w-100 rounded px-md-0 px-4">
+                    <div class="row d-flex justify-content-center">
+                        <div class="col-lg-8 py-4">
+                            <h2 class="form-title mb-0 text-center">Задайте параметры</h2>
+                            <form action="" method="POST" class="subscribe-form w-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <label for="pc_option" class="label_option me-2">
+                                        Выберите вариант сборки ПК:
+                                    </label>
+                                    <select class="pc_option flex-grow-1 me-2" name="pc_option">
+                                        <option value="Игровой">Игровой</option>
+                                        <option value="Графический">Графический</option>
+                                        <option value="Офисный">Офисный</option>
+                                        <option value="Для программирования">Для программирования</option>
+                                        <option value="Для хост сервера">Для хост сервера</option>
+                                        <option value="Бюджетная">Бюджетная</option>
+                                        <option value="Для работы с мультимедиа">Для работы с мультимедиа</option>
+                                    </select>
+                                </div>
+                                <div class="cost d-flex align-items-center justify-content-between mb-4">
+                                    <label for="pc_cost" class="label_cost me-2">Укажите желаемую стоимость сборки</label>
+                                    <input type="number" min="0" step="1000" class="form-control flex-grow-1 me-2" value="75000" id="got_price" name="got_price" placeholder="Введите сумму" />
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-4">
+                                    <input type="submit" value="Искать" class="submit btn btn-success w-100 btn-lg" />
+                                </div>
+                            </form>
+                            <div class="loading-overlay" id="loadingOverlay" style="display: none">
+                                <div class="loading-message">
+                                    Идет поиск компонентов, пожалуйста подождите...
+                                </div>
+                                <div class="loader"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</section>
+
+
+{% if got_price %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="title" style="text-align: center">
+        <h4
+          class="mb-0"
+          style="color: black; font-size: 24px; margin-bottom: 20px"
+        >
+          Суммы {{ got_price }} недостаточно. Измените параметры и попробуйте еще раз.
+        </h4>
+      </div>
+    </div>
+  </div>
 </div>
-<br>
-<br>
+<br />
+<br />
+{% endif %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Показываем загрузку перед отправкой формы
+    $(".subscribe-form").on("submit", function () {
+      $("#loadingOverlay").show(); // Показываем анимацию загрузки
+    });
+  });
+</script>
 {% endblock content %}

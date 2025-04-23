@@ -15,13 +15,107 @@ from sqlalchemy import and_, or_, case, desc
 from compatibilyty_algoritm import compatible
 
 
-assembly = []
+assembly = []   
 all_price = 0
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+def find_prices(data):
+    prices = []
+    
+    if isinstance(data, dict):
+        # Если data - словарь, проверяем наличие ключа 'price'
+        if 'price' in data:
+            prices.append(data['price'])
+        
+        # Рекурсивно проверяем все значения в словаре
+        for value in data.values():
+            prices.extend(find_prices(value))
+    
+    elif isinstance(data, list):
+        # Если data - список, проверяем каждый элемент
+        for item in data:
+            prices.extend(find_prices(item))
+    
+    return prices
+
+def get_build_ranges(build_type):
+    builds = {
+        "игровой": {
+            'videocard': [0.4, 0.45],
+            'processor': [0.15, 0.2],
+            'ram': [0.03, 0.07],
+            'motherboard': [0.05, 0.1],
+            'ssd': [0.05, 0.09],
+            'body': [0.00001, 0.03],
+            'cooler': [0.00001, 0.02],
+            'charge': [0.00001, 0.04]
+        },
+        "графический": {
+            'videocard': [0.45, 0.50],
+            'processor': [0.13, 0.16],
+            'ram': [0.07, 0.12],
+            'motherboard': [0.0001, 0.1],
+            'ssd': [0.00001, 0.04],
+            'body': [0.00001, 0.04],
+            'cooler': [0.00001, 0.02],
+            'charge': [0.00001, 0.02]
+        },
+        "офисный": {
+            'processor': [0.23, 0.32],
+            'ram': [0.06, 0.1],
+            'motherboard': [0.12, 0.2],
+            'ssd': [0.18, 0.24],
+            'body': [0.06, 0.09],
+            'cooler': [0.001, 0.02],
+            'charge': [0.001, 0.05],
+            'videocard': [0.00001, 0.08]
+        },
+        "для работы с мультимедиа": {
+            'processor': [0.13, 0.18],
+            'ram': [0.05, 0.1],
+            'ssd': [0.15, 0.21],
+            'videocard': [0.16, 0.27],
+            'motherboard': [0.07, 0.12],
+            'body': [0.03, 0.07],
+            'cooler': [0.00001, 0.02],
+            'charge': [0.015, 0.06]
+        },
+        "для программирования": {
+            'processor': [0.23, 0.28],
+            'ram': [0.11, 0.19],
+            'ssd': [0.16, 0.24],
+            'motherboard': [0.05, 0.1],
+            'body': [0.001, 0.06],
+            'cooler': [0.001, 0.02],
+            'charge': [0.001, 0.03],
+            'videocard': [0.001, 0.08]
+        },
+        "для хост сервера": {
+            'processor': [0.25, 0.3],
+            'ram': [0.16, 0.22],
+            'motherboard': [0.1, 0.15],
+            'ssd': [0.1, 0.145],
+            'body': [0.00001, 0.05],
+            'cooler': [0.001, 0.02],
+            'charge': [0.001, 0.045],
+            'videocard': [0.001, 0.06]
+        },
+        "бюджетная": {          #33500 (29563) - min, max - 250000 (179226)
+            'processor': [0.10, 0.25],
+            'ram': [0.06, 0.13],
+            'motherboard': [0.12, 0.23],
+            'ssd': [0.12, 0.2],
+            'body': [0.001, 0.13],
+            'cooler': [0.001, 0.025],
+            'charge': [0.001, 0.09],
+            'videocard': [0.001, 0.11]
+        }
+    }
+
+    return builds.get(build_type.lower(), "Неизвестный тип сборки")
 
 def create_app(config_name='dev'):
     app = Flask(__name__)
@@ -471,19 +565,33 @@ def create_app(config_name='dev'):
             try:
                 c = int(got_price)
                 if c <=  20000:
-                    return render_template('home.html',got_price = got_price)
+                    return render_template('home.html', got_price=got_price)
                 if got_price == None:
                     got_price = "75000"
                 all_price = got_price
                 print("all_price = ",all_price)
+                selected_option = request.form.get('pc_option')
+                print('selected_option =',selected_option)
             except:
-                return render_template('home.html',got_price = got_price)
-            motherboards = get_components_by_type_and_price("materinskaia-plata",float(all_price) * 0.02, float(all_price) * 0.12)
-            processors = get_components_by_type_and_price("protsessory-cpu",float(all_price) * 0.10, float(all_price) * 0.16)
-            videocards = get_components_by_type_and_price("videokarty",float(all_price) * 0.4, float(all_price) * 0.6)
-            rams = get_components_by_type_and_price("operativnaia-pamiat",float(all_price) * 0.07, float(all_price) * 0.13)
-            bodys = get_components_by_type_and_price("korpusa",float(all_price) * 0.01, float(all_price) * 0.08) #поменять на 0.02
-            ssds = get_components_by_type_and_price("vnutrennie-tverdotelnye-nakopiteli-ssd",float(all_price) * 0.01, float(all_price) * 0.04)
+                return render_template('home.html', got_price=got_price)
+            price_ranges = get_build_ranges(selected_option)
+            print("price_ranges=",price_ranges)
+
+            motherboards = get_components_by_type_and_price("materinskaia-plata", float(all_price) * price_ranges['motherboard'][0], float(all_price) * price_ranges['motherboard'][1])
+
+            processors = get_components_by_type_and_price("protsessory-cpu", float(all_price) * price_ranges['processor'][0], float(all_price) * price_ranges['processor'][1])
+
+            videocards = get_components_by_type_and_price("videokarty", float(all_price) * price_ranges['videocard'][0], float(all_price) * price_ranges['videocard'][1])
+
+            rams = get_components_by_type_and_price("operativnaia-pamiat", float(all_price) * price_ranges['ram'][0], float(all_price) * price_ranges['ram'][1])
+
+            bodys = get_components_by_type_and_price("korpusa", float(all_price) * price_ranges['body'][0], float(all_price) * price_ranges['body'][1])
+
+            ssds = get_components_by_type_and_price("vnutrennie-tverdotelnye-nakopiteli-ssd", float(all_price) * price_ranges['ssd'][0], float(all_price) * price_ranges['ssd'][1])
+
+            coolers = get_components_by_type_and_price("kulery-i-sistemy-okhlazhdeniia", float(all_price) * price_ranges['cooler'][0], float(all_price) * price_ranges['cooler'][1])
+
+            charges = get_components_by_type_and_price("bloki-pitaniia", float(all_price) * price_ranges['charge'][0], float(all_price) * price_ranges['charge'][1])
 
             print("motherboards = ", len(motherboards))
             print("processors = ", len(processors))
@@ -491,22 +599,30 @@ def create_app(config_name='dev'):
             print("rams = ", len(rams))
             print("bodys = ", len(bodys))
             print("ssds = ", len(ssds))
+            print("coolers = ", len(coolers))
+            print("charges = ", len(charges))
 
-            print("motherboards = ", extract_prices(motherboards),float(all_price) * 0.02, float(all_price) * 0.12)
-            print("processors = ", extract_prices(processors),float(all_price) * 0.10, float(all_price) * 0.14)
-            print("videocards = ", extract_prices(videocards),float(all_price) * 0.4, float(all_price) * 0.6)
-            print("rams = ", extract_prices(rams),float(all_price) * 0.08, float(all_price) * 0.11)
-            print("bodys = ",extract_prices(bodys),float(all_price) * 0.01, float(all_price) * 0.8)
-            print("ssds = ", extract_prices(ssds),float(all_price) * 0.01, float(all_price) * 0.03)
+            print("motherboards = ", extract_prices(motherboards),float(all_price) * price_ranges['motherboard'][0], float(all_price) * price_ranges['motherboard'][1])
+            print("processors = ", extract_prices(processors),float(all_price) * price_ranges['processor'][0], float(all_price) * price_ranges['processor'][1])
+            print("videocards = ", extract_prices(videocards),float(all_price) * price_ranges['videocard'][0], float(all_price) * price_ranges['videocard'][1])
+            print("rams = ", extract_prices(rams),float(all_price) * price_ranges['ram'][0], float(all_price) * price_ranges['ram'][1])
+            print("bodys = ",extract_prices(bodys),float(all_price) * price_ranges['body'][0], float(all_price) * price_ranges['body'][1])
+            print("ssds = ", extract_prices(ssds),float(all_price) * price_ranges['ssd'][0], float(all_price) * price_ranges['ssd'][1])
+            print("coolers = ", extract_prices(coolers),float(all_price) * price_ranges['cooler'][0], float(all_price) * price_ranges['cooler'][1])
+            print("charges = ", extract_prices(charges),float(all_price) * price_ranges['charge'][0], float(all_price) * price_ranges['charge'][1])
 
-            comp_result = compatible(all_price,
-                                1,
-                                motherboards, 
+            comp_result = compatible(
+                                motherboards,
                                 processors,
                                 videocards,
                                 rams,
                                 bodys,
-                                ssds)
+                                ssds,
+                                coolers,
+                                charges)
+            pricess = find_prices(comp_result)
+            print(pricess)
+           
             for i in range(10):
                 print()
             print("comp_result = ", comp_result)
@@ -515,10 +631,17 @@ def create_app(config_name='dev'):
                 'components': comp_result,
                 'total_price': extract_prices
             }
-            total_price = extract_prices(comp_result)
-            print(total_price)
-            return render_template('result.html', result=result, all_price = all_price, total_price=total_price)
-            # return redirect(url_for("result"))
+            if comp_result:
+                total_price = extract_prices(comp_result)
+                print(total_price)
+                return render_template(
+                    'result.html',
+                    result=result,
+                    all_price=all_price,
+                    total_price=total_price
+                    )
+            else:
+                return render_template('home.html', got_price=got_price)
         return render_template('home.html', name="name")
 
     @app.route('/about')
@@ -665,7 +788,8 @@ def create_app(config_name='dev'):
                     ]
                 }
         }
-
+        order_by() - по возростанию
+        desc() - по убыванию
         """
         try:
             min_price = float(min_price)
@@ -678,7 +802,8 @@ def create_app(config_name='dev'):
                         Links.price <= max_price,
                         Links.is_actual == True
                     )
-                ).order_by(desc(Links.date_parse)).all()
+                #).order_by(desc(Links.date_parse)).all()
+                ).order_by(desc(Links.price)).all()
             else:
                 links = Links.query.filter(
                     and_(

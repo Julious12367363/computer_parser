@@ -14,12 +14,12 @@ class Links(db.Model):
     image_url = db.Column(db.String(200), index=True)
     price = db.Column(db.Integer, index=True)
     articul_yandex = db.Column(db.String(50), index=True)
+    is_actual = db.Column(db.Boolean, default=True)
     characteristics = db.relationship(
         'Characteristics',
         back_populates='link',
         cascade='all, delete-orphan'
         )
-    is_actual = db.Column(db.Boolean, default=True)
 
     def __repr__(self):
         return f'<Links {self.component}>'

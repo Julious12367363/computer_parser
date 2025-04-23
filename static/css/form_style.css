@@ -1,0 +1,103 @@
+.form-title {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  color: white;
+  font-size: 24px;
+  margin: 0;
+}
+
+.full-width-section {
+    width: 100vw; /* Задает ширину 100% от видимой области окна браузера */
+    margin-left: calc(-50vw + 50%); /* Центрирует секцию, так как width: 100vw может добавить горизонтальный скролл */
+}
+
+.container-fluid {
+  margin: 0px;
+  padding: 0px;
+}
+
+.form-container{
+  margin: 0px;
+  padding: 0px;
+}
+
+.col-md-12 .form-parameters {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.row .full-width {
+  margin-left: 0px;
+  margin-right: 0px;
+  margin: auto;
+  padding: 0px;
+}
+
+.bg-primary {
+  margin-left: 0px;
+  margin-right: 0px;
+  width: 100%;
+}
+
+.subscribe-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.label_option,
+.label_cost {
+  margin-bottom: 10px;
+  color: white;
+  font-size: 20px;
+  margin: 0;
+}
+
+select,
+.form-control {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+input[type="text"] {
+  flex: 1;
+  color: #00043c;
+}
+
+.pc_option {
+  flex: 1;
+  color: #00043c;
+  width: auto;
+}
+
+.pc_option:hover {
+  background-color: #00043c;
+  color: white;
+}
+
+.form-control {
+  width: auto;
+}
+
+.form-control.invalid {
+    border-color: red;
+    border: 2px solid;
+}
+
+input[type="submit"] {
+  background-color: orange;
+  color: white;
+  font-size: 18px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  padding: 20px;
+  margin-right: 10px;
+}
+
+input[type="submit"]:hover {
+  background-color: #00043c; /* Цвет кнопки при наведении */
+}
